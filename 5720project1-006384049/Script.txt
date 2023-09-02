@@ -1,0 +1,66 @@
+-- Michael Barrett - 006384049 
+
+-- QUERY 1
+select topic.id, topic.description, count(*) as hits
+from topic, blurt_analysis
+where blurt_analysis.topicid = topic.id
+group by topic.id
+order by topic.id;
+
+-- QUERY 2
+select user.name as Celebrity_Name, user.address as Address
+from celebrity, user
+where celebrity.kind = 'Tennis Player' and celebrity.email = user.email;
+
+-- QUERY 3
+select vendor.name, advertisement.content
+from vendor, advertisement
+where vendor.id = advertisement.vendorid
+order by vendor.name;
+
+-- QUERY 4 
+select c.email, u.password, u.name, u.date_of_birth, c.kind 
+from celebrity c
+join user u on c.email = u.email
+where c.email
+not in
+(select distinct follower
+from follow)
+and 
+kind = "MovieStar";
+
+-- QUERY 5
+select f.followee, count(f.follower) as Follower_Count
+from follow as f
+where f.followee in (select email from vendor_ambassador)
+group by f.followee
+having Follower_Count > 30 and Follower_Count < 80;
+
+-- QUERY 6
+with t as (
+			select a.email emailA, b.email emailB, a.topicid
+			from blurt_analysis a, blurt_analysis b
+			where a.topicid = b.topicid and a.email <> b.email)
+select emailA, emailB
+from t
+left join follow on emailA = follow.follower and emailB = follow.followee
+where follow.follower is null;
+
+-- QUERY 7
+select u.name, count(b.blurtid)
+from celebrity c, blurt b, user u 
+where c.email = b.email and u.email = c.email
+group by u.name
+order by count(b.blurtid) DESC;
+
+-- QUERY 8
+select v.name, va.email, count(f.follower) as followers
+from vendor v left join vendor_ambassador va on v.id = va.vendorid, follow f
+where f.followee = va.email
+group by v.name, va.email;
+
+-- QUERY 9
+select v.id, v.name, va.email, count(a.id) as advertisements
+from vendor v, vendor_ambassador va, advertisement a
+where v.id = a.vendorid and va.vendorid = v.id
+group by v.id, v.name, va.email;
